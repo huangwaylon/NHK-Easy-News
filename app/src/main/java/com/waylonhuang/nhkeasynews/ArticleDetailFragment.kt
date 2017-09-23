@@ -41,6 +41,9 @@ class ArticleDetailFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.fragment_article_detail, container, false)
 
+        // Needed to inflate fragment's own options menu.
+        setHasOptionsMenu(true)
+
         furiganaView = view.findViewById<FuriganaView>(R.id.furigana_view)
         textView = view.findViewById<TextView>(R.id.text_view)
 
@@ -213,9 +216,10 @@ class ArticleDetailFragment : Fragment() {
             releasePlayer()
         }
     }
-    
-    override fun onPrepareOptionsMenu(menu: Menu?) {
-        super.onPrepareOptionsMenu(menu)
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
         menu!!.clear()
         activity.menuInflater.inflate(R.menu.menu_detail, menu)
     }
