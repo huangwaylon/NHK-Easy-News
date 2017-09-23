@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/article_img"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:contentDescription="Article Image"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="vertical"
+        android:paddingLeft="80dp"
+        android:paddingStart="80dp">
+
+        <TextView
+            android:id="@+id/article_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="北朝鮮に拉致された人の家族などが集まって会を開く"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/article_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="9月19日 16時30分"
+            android:textSize="12sp" />
+    </LinearLayout>
+</RelativeLayout>

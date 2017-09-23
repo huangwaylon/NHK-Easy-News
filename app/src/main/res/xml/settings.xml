@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General">
+        <Preference
+            android:key="reset"
+            android:summary="Clear all settings and preferences"
+            android:title="Reset" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Ads">
+        <Preference
+            android:key="video"
+            android:summary="View a video ad and see fewer banner ads for a week!"
+            android:title="Video Ad" />
+    </PreferenceCategory>
+
+
+    <PreferenceCategory android:title="Version">
+        <Preference
+            android:key="version"
+            android:summary="1.0.0"
+            android:title="Version" />
+
+        <Preference
+            android:key="source"
+            android:summary="Google Play"
+            android:title="Source" />
+
+        <Preference
+            android:key="build"
+            android:summary="Built on 31 May 2017"
+            android:title="Build" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="About">
+        <Preference
+            android:key="contact"
+            android:summary="nhkeasyapp@gmail.com"
+            android:title="Contact" />
+
+        <Preference
+            android:key="rate"
+            android:summary="Support this app with your rating!"
+            android:title="Rate the app" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Legal Information">
+        <Preference
+            android:key="copyright"
+            android:summary="Copyright \u00A9 2017 Waylon Huang"
+            android:title="Copyright" />
+
+        <Preference
+            android:key="licenses"
+            android:summary="License details for open source software"
+            android:title="Open source licenses" />
+    </PreferenceCategory>
+</PreferenceScreen>

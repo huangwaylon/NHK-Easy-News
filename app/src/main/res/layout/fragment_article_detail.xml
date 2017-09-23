@@ -1,0 +1,36 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="80dp">
+
+        <FrameLayout
+            android:id="@+id/fl_article_detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="18sp" />
+
+            <com.waylonhuang.nhkeasynews.FuriganaView
+                android:id="@+id/furigana_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </FrameLayout>
+
+    </ScrollView>
+
+    <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>
