@@ -1,5 +1,7 @@
 package com.waylonhuang.nhkeasynews
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
@@ -76,9 +78,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
 
-        return if (id == R.id.action_settings) {
-            true
-        } else super.onOptionsItemSelected(item)
+        if (id == R.id.action_settings) {
+            val articleUrl = "http://www3.nhk.or.jp/news/easy/index.html"
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(articleUrl)
+            startActivity(intent)
+            return true
+        } else {
+            return super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

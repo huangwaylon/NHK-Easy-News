@@ -4,9 +4,7 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView
@@ -24,6 +22,9 @@ import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.util.Util
+import android.content.Intent
+import android.support.v7.app.AlertDialog
+import android.widget.SeekBar
 
 
 class ArticleDetailFragment : Fragment() {
@@ -60,6 +61,8 @@ class ArticleDetailFragment : Fragment() {
                 DefaultLoadControl())
 
         playerView!!.setPlayer(player)
+        // Non positive value so that the controls are shown indefinitely.
+        playerView!!.setControllerShowTimeoutMs(-1);
 
         player!!.setPlayWhenReady(playWhenReady)
         player!!.seekTo(currentWindow, playbackPosition)
@@ -210,4 +213,82 @@ class ArticleDetailFragment : Fragment() {
             releasePlayer()
         }
     }
+    
+    override fun onPrepareOptionsMenu(menu: Menu?) {
+        super.onPrepareOptionsMenu(menu)
+        menu!!.clear()
+        activity.menuInflater.inflate(R.menu.menu_detail, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_font -> {
+                showFontDialog()
+            }
+            R.id.action_speed -> {
+                showSpeedDialog()
+            }
+            R.id.action_website -> {
+                val articleId = arguments.getString("ID")
+                val articleUrl = "http://www3.nhk.or.jp/news/easy/$articleId/$articleId.html"
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(articleUrl)
+                startActivity(intent)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun showSpeedDialog() {
+        val seekBar = SeekBar(activity)
+        seekBar.keyProgressIncrement = 1
+        seekBar.max = 99
+        seekBar.progress = 9
+
+        val speedDialog = AlertDialog.Builder(activity)
+        speedDialog.setTitle("Select audio playback speed")
+        speedDialog.setView(seekBar)
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar1: SeekBar?, progress: Int, fromUser: Boolean) {
+                player!!.playbackParameters = PlaybackParameters((progress + 1) / 100.0f, 1.0f)
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+            }
+        })
+
+        speedDialog.setPositiveButton("OK", null)
+        speedDialog.create().show()
+    }
+
+    private fun showFontDialog() {
+        val seekBar = SeekBar(activity)
+        seekBar.keyProgressIncrement = 1
+        seekBar.max = 50
+        seekBar.progress = 2
+
+        val speedDialog = AlertDialog.Builder(activity)
+        speedDialog.setTitle("Select font size")
+        speedDialog.setView(seekBar)
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar1: SeekBar?, progress: Int, fromUser: Boolean) {
+                textView!!.textSize = progress + 16.0f
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+            }
+        })
+
+        speedDialog.setPositiveButton("OK", null)
+        speedDialog.create().show()
+    }
+
 }
