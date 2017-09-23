@@ -38,6 +38,8 @@ class ArticleDetailFragment : Fragment() {
     private var currentWindow: Int = 0
     private var playWhenReady = true
 
+    private var articleText: String = ""
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.fragment_article_detail, container, false)
 
@@ -116,11 +118,16 @@ class ArticleDetailFragment : Fragment() {
         }
 
         override fun onPostExecute(result: String) {
-            val tp = textView!!.paint
-            val mark_s = 0 // highlight 厚い in text (characters 11-13)
-            val mark_e = 0
-            furiganaView!!.text_set(tp, result, mark_s, mark_e)
+            articleText = result
+            updateFuriganaView()
         }
+    }
+
+    private fun updateFuriganaView() {
+        val tp = textView!!.paint
+        val mark_s = 0 // highlight 厚い in text (characters 11-13)
+        val mark_e = 0
+        furiganaView!!.text_set(tp, articleText, mark_s, mark_e)
     }
 
     fun text(element: Element): String {
@@ -227,19 +234,26 @@ class ArticleDetailFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_font -> {
-                showDialog(1, 50, 16, "Select font size",
+                showDialog(1,
+                        56,
+                        textView!!.textSize.toInt() - 16,
+                        "Select Font Size",
+                        "${textView!!.textSize}",
                         { progress: Int ->
                             val fontVal = progress + 16.0f
                             textView!!.textSize = fontVal
-                            furiganaView!!.invalidate()
-                            furiganaView!!.requestLayout()
+                            updateFuriganaView()
 
                             // Return the font value.
                             "$fontVal"
                         })
             }
             R.id.action_speed -> {
-                showDialog(1, 29, 9, "Select audio playback speed",
+                showDialog(1,
+                        29,
+                        player!!.playbackParameters.speed.toInt() * 10 - 1,
+                        "Select Audio Playback Speed",
+                        "${player!!.playbackParameters.speed}x",
                         { progress: Int ->
                             val speedVal = (progress + 1) / 10.0f
                             player!!.playbackParameters = PlaybackParameters(speedVal, 1.0f)
@@ -259,21 +273,19 @@ class ArticleDetailFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun showDialog(incrementVal: Int, maxVal: Int, progressVal: Int, titleStr: String, routine: (Int) -> String) {
+    private fun showDialog(incrementVal: Int, maxVal: Int, progressVal: Int, titleStr: String, initVal: String, routine: (Int) -> String) {
         val builder = AlertDialog.Builder(activity)
 
         val dialogView = layoutInflater.inflate(R.layout.alert_dialog_fragment_detail, null);
         builder.setView(dialogView);
 
         val dialogTextView = dialogView.findViewById<TextView>(R.id.alert_dialog_tv)
+        dialogTextView.text = initVal
+
         val seekBar = dialogView.findViewById<SeekBar>(R.id.alert_dialog_sb)
         seekBar.keyProgressIncrement = incrementVal
         seekBar.max = maxVal
         seekBar.progress = progressVal
-
-        builder.setTitle(titleStr)
-        builder.setView(seekBar)
-
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar1: SeekBar?, progress: Int, fromUser: Boolean) {
                 val result = routine(progress)
@@ -289,7 +301,8 @@ class ArticleDetailFragment : Fragment() {
             }
         })
 
+        builder.setTitle(titleStr)
         builder.setPositiveButton("OK", null)
-        builder.create().show()
+        builder.show()
     }
 }
