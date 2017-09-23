@@ -5,18 +5,18 @@
     <item
         android:id="@+id/action_font"
         android:orderInCategory="100"
-        android:title="Font size"
+        android:title="Font Size"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_speed"
         android:orderInCategory="100"
-        android:title="Playback speed"
+        android:title="Playback Speed"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_website"
         android:orderInCategory="100"
-        android:title="View in browser"
+        android:title="View in Browser"
         app:showAsAction="never" />
 </menu>

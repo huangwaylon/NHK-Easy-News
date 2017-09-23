@@ -227,10 +227,26 @@ class ArticleDetailFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_font -> {
-                showFontDialog()
+                showDialog(1, 50, 16, "Select font size",
+                        { progress: Int ->
+                            val fontVal = progress + 16.0f
+                            textView!!.textSize = fontVal
+                            furiganaView!!.invalidate()
+                            furiganaView!!.requestLayout()
+
+                            // Return the font value.
+                            "$fontVal"
+                        })
             }
             R.id.action_speed -> {
-                showSpeedDialog()
+                showDialog(1, 29, 9, "Select audio playback speed",
+                        { progress: Int ->
+                            val speedVal = (progress + 1) / 10.0f
+                            player!!.playbackParameters = PlaybackParameters(speedVal, 1.0f)
+
+                            // Return the font value.
+                            "${speedVal}x"
+                        })
             }
             R.id.action_website -> {
                 val articleId = arguments.getString("ID")
@@ -243,19 +259,27 @@ class ArticleDetailFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun showSpeedDialog() {
-        val seekBar = SeekBar(activity)
-        seekBar.keyProgressIncrement = 1
-        seekBar.max = 99
-        seekBar.progress = 9
+    private fun showDialog(incrementVal: Int, maxVal: Int, progressVal: Int, titleStr: String, routine: (Int) -> String) {
+        val builder = AlertDialog.Builder(activity)
 
-        val speedDialog = AlertDialog.Builder(activity)
-        speedDialog.setTitle("Select audio playback speed")
-        speedDialog.setView(seekBar)
+        val dialogView = layoutInflater.inflate(R.layout.alert_dialog_fragment_detail, null);
+        builder.setView(dialogView);
+
+        val dialogTextView = dialogView.findViewById<TextView>(R.id.alert_dialog_tv)
+        val seekBar = dialogView.findViewById<SeekBar>(R.id.alert_dialog_sb)
+        seekBar.keyProgressIncrement = incrementVal
+        seekBar.max = maxVal
+        seekBar.progress = progressVal
+
+        builder.setTitle(titleStr)
+        builder.setView(seekBar)
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar1: SeekBar?, progress: Int, fromUser: Boolean) {
-                player!!.playbackParameters = PlaybackParameters((progress + 1) / 100.0f, 1.0f)
+                val result = routine(progress)
+
+                // Set the text of the text view associated with the seek bar.
+                dialogTextView.text = result
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -265,34 +289,7 @@ class ArticleDetailFragment : Fragment() {
             }
         })
 
-        speedDialog.setPositiveButton("OK", null)
-        speedDialog.create().show()
+        builder.setPositiveButton("OK", null)
+        builder.create().show()
     }
-
-    private fun showFontDialog() {
-        val seekBar = SeekBar(activity)
-        seekBar.keyProgressIncrement = 1
-        seekBar.max = 50
-        seekBar.progress = 2
-
-        val speedDialog = AlertDialog.Builder(activity)
-        speedDialog.setTitle("Select font size")
-        speedDialog.setView(seekBar)
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar1: SeekBar?, progress: Int, fromUser: Boolean) {
-                textView!!.textSize = progress + 16.0f
-            }
-
-            override fun onStartTrackingTouch(p0: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(p0: SeekBar?) {
-            }
-        })
-
-        speedDialog.setPositiveButton("OK", null)
-        speedDialog.create().show()
-    }
-
 }
