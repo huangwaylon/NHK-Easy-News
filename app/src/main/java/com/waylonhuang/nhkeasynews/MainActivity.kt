@@ -3,8 +3,6 @@ package com.waylonhuang.nhkeasynews
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
@@ -14,9 +12,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.app_bar_main.*
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ArticlesFragment.OnFragmentInteractionListener {
     private var navDrawerSelectedIndex: Int = 0
@@ -76,16 +72,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
+        when (item.itemId) {
+            android.R.id.home -> {
+                Toast.makeText(this, "Touch", Toast.LENGTH_SHORT).show()
+                onBackPressed()
+                return true
+            }
+            R.id.action_settings -> {
+                val articleUrl = "http://www3.nhk.or.jp/news/easy/index.html"
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(articleUrl)
+                startActivity(intent)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
 
-        if (id == R.id.action_settings) {
-            val articleUrl = "http://www3.nhk.or.jp/news/easy/index.html"
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(articleUrl)
-            startActivity(intent)
-            return true
-        } else {
-            return super.onOptionsItemSelected(item)
         }
     }
 
@@ -127,9 +128,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onArticleSelected(url: String) {
-        val fragment = ArticleDetailFragment.newInstance(url)
-        supportFragmentManager.beginTransaction().replace(R.id.flContent, fragment, "detail").commit()
+    override fun onArticleSelected(articleId: String) {
+        val fragment = ArticleDetailFragment.newInstance(articleId)
+        supportFragmentManager.beginTransaction()
+                .add(R.id.flContent, fragment, articleId)
+                .addToBackStack(articleId)
+                .commit()
 
         // Add one so that when in detail, pressing back will allow us to go back.
         navDrawerSelectedIndex += 1

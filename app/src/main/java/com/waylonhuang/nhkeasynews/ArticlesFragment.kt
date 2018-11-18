@@ -5,6 +5,7 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -26,6 +27,7 @@ import java.net.URL
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ArticlesFragment : Fragment() {
@@ -41,6 +43,9 @@ class ArticlesFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        (activity as AppCompatActivity).supportActionBar!!.title = "NHK Easy News"
+
         // Inflate the layout for this fragment
         val view = inflater!!.inflate(R.layout.fragment_articles, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.rv_article)
@@ -95,7 +100,7 @@ class ArticlesFragment : Fragment() {
     }
 
     interface OnFragmentInteractionListener {
-        fun onArticleSelected(url: String)
+        fun onArticleSelected(articleId: String)
     }
 
     @Throws(IOException::class)
@@ -212,9 +217,14 @@ class ArticlesFragment : Fragment() {
             }
         }
 
-        override fun onPostExecute(articles: List<Article>) {
-            Toast.makeText(activity, "News updated", Toast.LENGTH_SHORT).show()
-            adapter.updateDataSet(articles)
+        override fun onPostExecute(articles: List<Article>?) {
+            if (articles == null) {
+                Toast.makeText(activity, "Couldn't update news, check network connection", Toast.LENGTH_SHORT).show()
+                adapter.updateDataSet(ArrayList<Article>())
+            } else {
+                Toast.makeText(activity, "News updated", Toast.LENGTH_SHORT).show()
+                adapter.updateDataSet(articles)
+            }
             swipeRefreshLayout!!.isRefreshing = false
         }
     }

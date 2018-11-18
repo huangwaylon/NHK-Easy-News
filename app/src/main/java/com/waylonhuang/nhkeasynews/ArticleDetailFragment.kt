@@ -1,5 +1,6 @@
 package com.waylonhuang.nhkeasynews
 
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -23,13 +24,17 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.util.Util
 import android.content.Intent
+import android.content.SharedPreferences
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.widget.ProgressBar
 import android.widget.SeekBar
 
 
 class ArticleDetailFragment : Fragment() {
     private var furiganaView: FuriganaView? = null
     private var textView: TextView? = null
+    private var progressBar: ProgressBar? = null
 
     private var playerView: SimpleExoPlayerView? = null
     private var player: SimpleExoPlayer? = null
@@ -40,16 +45,34 @@ class ArticleDetailFragment : Fragment() {
 
     private var articleText: String = ""
 
+    private var preferences: SharedPreferences? = null
+    private var fontDefault: Int = 18
+    private var playbackDefault: Float = 1.0f
+    private var furiganaDefault: Boolean = true
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.fragment_article_detail, container, false)
 
         // Needed to inflate fragment's own options menu.
         setHasOptionsMenu(true)
 
+        // MP3 audio player.
+        playerView = view.findViewById<SimpleExoPlayerView>(R.id.video_view)
+
+        // Furigana view for article.
         furiganaView = view.findViewById<FuriganaView>(R.id.furigana_view)
         textView = view.findViewById<TextView>(R.id.text_view)
 
-        playerView = view.findViewById<SimpleExoPlayerView>(R.id.video_view);
+        // Progress bar to display while article is loading.
+        progressBar = view.findViewById<ProgressBar>(R.id.pb_article_detail)
+
+        // Initialize settings based on preferences.
+        preferences = activity.getSharedPreferences(SettingsFragment.PREFS_FILE, 0)
+        fontDefault = preferences!!.getInt("font", 18)
+        playbackDefault = preferences!!.getFloat("playback", 1.0f)
+        furiganaDefault = preferences!!.getBoolean("furigana", true)
+
+        textView!!.textSize = fontDefault.toFloat()
 
         return view
     }
@@ -71,6 +94,8 @@ class ArticleDetailFragment : Fragment() {
 
         player!!.setPlayWhenReady(playWhenReady)
         player!!.seekTo(currentWindow, playbackPosition)
+
+        player!!.playbackParameters = PlaybackParameters(playbackDefault, 1f)
 
         val uri = Uri.parse(mp3Url)
         val mediaSource = buildMediaSource(uri)
@@ -119,15 +144,15 @@ class ArticleDetailFragment : Fragment() {
 
         override fun onPostExecute(result: String) {
             articleText = result
-            updateFuriganaView()
+            updateFuriganaView(fontDefault.toFloat())
+
+            progressBar!!.visibility = View.GONE
         }
     }
 
-    private fun updateFuriganaView() {
-        val tp = textView!!.paint
-        val mark_s = 0 // highlight 厚い in text (characters 11-13)
-        val mark_e = 0
-        furiganaView!!.text_set(tp, articleText, mark_s, mark_e)
+    private fun updateFuriganaView(fontSize: Float) {
+        textView!!.textSize = fontSize
+        furiganaView!!.text_set(textView!!.paint, articleText, 0, 0)
     }
 
     fun text(element: Element): String {
@@ -142,14 +167,12 @@ class ArticleDetailFragment : Fragment() {
                             accum.append("}")
                         }
                     }
-
                 } else if (node is Element) {
                     if (node.tagName().equals("ruby")) {
                         accum.append("{")
                     } else if (node.tagName().equals("rt")) {
                         accum.append(";")
                     }
-
                     if (accum.length > 0 && (node.isBlock() || node.tagName().equals("br")) && !lastCharIsWhitespace(accum))
                         accum.append(" ")
                 }
@@ -236,30 +259,49 @@ class ArticleDetailFragment : Fragment() {
             R.id.action_font -> {
                 showDialog(1,
                         56,
-                        textView!!.textSize.toInt() - 16,
+                        fontDefault / 2 - 16,
                         "Select Font Size",
-                        "${textView!!.textSize}",
+                        "${fontDefault / 2}",
                         { progress: Int ->
                             val fontVal = progress + 16.0f
-                            textView!!.textSize = fontVal
-                            updateFuriganaView()
+                            updateFuriganaView(fontVal)
 
                             // Return the font value.
                             "$fontVal"
+                        },
+                        { d: DialogInterface, i: Int ->
+                            fontDefault = textView!!.textSize.toInt()
+
+                            val editor = preferences!!.edit()
+                            editor.putInt("font", fontDefault)
+                            editor.apply()
+                        },
+                        { d: DialogInterface, i: Int ->
+                            updateFuriganaView(fontDefault.toFloat() / 2)
                         })
             }
             R.id.action_speed -> {
                 showDialog(1,
-                        29,
-                        player!!.playbackParameters.speed.toInt() * 10 - 1,
+                        19,
+                        (playbackDefault * 10 - 1).toInt(),
                         "Select Audio Playback Speed",
-                        "${player!!.playbackParameters.speed}x",
+                        "${playbackDefault}x",
                         { progress: Int ->
                             val speedVal = (progress + 1) / 10.0f
                             player!!.playbackParameters = PlaybackParameters(speedVal, 1.0f)
 
                             // Return the font value.
                             "${speedVal}x"
+                        },
+                        { d: DialogInterface, i: Int ->
+                            playbackDefault = player!!.playbackParameters.speed
+
+                            val editor = preferences!!.edit()
+                            editor.putFloat("playback", playbackDefault)
+                            editor.apply()
+                        },
+                        { d: DialogInterface, i: Int ->
+                            player!!.playbackParameters = PlaybackParameters(playbackDefault, 1.0f)
                         })
             }
             R.id.action_website -> {
@@ -273,7 +315,14 @@ class ArticleDetailFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun showDialog(incrementVal: Int, maxVal: Int, progressVal: Int, titleStr: String, initVal: String, routine: (Int) -> String) {
+    private fun showDialog(incrementVal: Int,
+                           maxVal: Int,
+                           progressVal: Int,
+                           titleStr: String,
+                           initVal: String,
+                           routine: (Int) -> String,
+                           positiveRoutine: (DialogInterface, Int) -> Unit,
+                           negativeRoutine: (DialogInterface, Int) -> Unit) {
         val builder = AlertDialog.Builder(activity)
 
         val dialogView = layoutInflater.inflate(R.layout.alert_dialog_fragment_detail, null);
@@ -287,22 +336,25 @@ class ArticleDetailFragment : Fragment() {
         seekBar.max = maxVal
         seekBar.progress = progressVal
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            var currProgress: Int = 0
             override fun onProgressChanged(seekBar1: SeekBar?, progress: Int, fromUser: Boolean) {
-                val result = routine(progress)
-
-                // Set the text of the text view associated with the seek bar.
-                dialogTextView.text = result
+                currProgress = progress
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
             }
 
-            override fun onStopTrackingTouch(p0: SeekBar?) {
+            override fun onStopTrackingTouch(progress: SeekBar?) {
+                val result = routine(currProgress)
+
+                // Set the text of the text view associated with the seek bar.
+                dialogTextView.text = result
             }
         })
 
         builder.setTitle(titleStr)
-        builder.setPositiveButton("OK", null)
+        builder.setPositiveButton("OK", { dialogInterface, someInt -> positiveRoutine(dialogInterface, someInt) })
+        builder.setNegativeButton("Cancel", { dialogInterface, someInt -> negativeRoutine(dialogInterface, someInt) })
         builder.show()
     }
 }

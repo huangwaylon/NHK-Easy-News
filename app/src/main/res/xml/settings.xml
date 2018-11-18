@@ -3,6 +3,22 @@
 
     <PreferenceCategory android:title="General">
         <Preference
+            android:key="font"
+            android:summary="Default font size for reading news articles"
+            android:title="Font Size" />
+
+        <Preference
+            android:key="playback"
+            android:summary="Default playback speed for Japanese audio"
+            android:title="Playback Speed" />
+
+        <CheckBoxPreference
+            android:checked="true"
+            android:key="furigana"
+            android:summary="Show furigana in articles and titles"
+            android:title="Display Furigana" />
+
+        <Preference
             android:key="reset"
             android:summary="Clear all settings and preferences"
             android:title="Reset" />
